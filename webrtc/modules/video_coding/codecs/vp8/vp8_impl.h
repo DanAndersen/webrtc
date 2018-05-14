@@ -147,6 +147,8 @@ class VP8DecoderImpl : public VP8Decoder {
   int ReturnFrame(const vpx_image_t* img,
                   uint32_t timeStamp,
                   int64_t ntp_time_ms,
+                  const CameraPosition& camera_position,
+                  const CameraRotation& camera_rotation,
                   int qp);
 
   const bool use_postproc_arm_;

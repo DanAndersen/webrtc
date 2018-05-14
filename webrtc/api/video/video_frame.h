@@ -101,6 +101,32 @@ class VideoFrame {
     return video_frame_buffer()->type() == VideoFrameBuffer::Type::kNative;
   }
 
+  // Set camera transform.
+  void set_camera_transform(float pos_x, float pos_y, float pos_z,
+   float rot_x, float rot_y, float rot_z, float rot_w) 
+  {
+   pos_x_ = pos_x;
+   pos_y_ = pos_y;
+   pos_z_ = pos_z;
+   rot_x_ = rot_x;
+   rot_y_ = rot_y;
+   rot_z_ = rot_z;
+   rot_w_ = rot_w;
+  }
+
+  // Get camera transform.
+  void get_camera_transform(float* pos_x, float* pos_y, float* pos_z, 
+   float* rot_x, float* rot_y, float* rot_z, float* rot_w) const
+  {
+   *pos_x = pos_x_;
+   *pos_y = pos_y_;
+   *pos_z = pos_z_;
+   *rot_x = rot_x_;
+   *rot_y = rot_y_;
+   *rot_z = rot_z_;
+   *rot_w = rot_w_; 
+  }
+
  private:
   // An opaque reference counted handle that stores the pixel data.
   rtc::scoped_refptr<webrtc::VideoFrameBuffer> video_frame_buffer_;
@@ -108,6 +134,13 @@ class VideoFrame {
   int64_t ntp_time_ms_;
   int64_t timestamp_us_;
   VideoRotation rotation_;
+  float pos_x_;
+  float pos_y_;
+  float pos_z_;
+  float rot_x_;
+  float rot_y_;
+  float rot_z_;
+  float rot_w_;
 };
 
 }  // namespace webrtc

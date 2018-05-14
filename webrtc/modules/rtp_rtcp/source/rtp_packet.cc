@@ -180,6 +180,8 @@ void Packet::GetHeader(RTPHeader* header) const {
   GetExtension<RepairedRtpStreamId>(&header->extension.repaired_stream_id);
   GetExtension<RtpMid>(&header->extension.mid);
   GetExtension<PlayoutDelayLimits>(&header->extension.playout_delay);
+  GetExtension<CameraTransformPosition>(&header->extension.camera_position);
+  GetExtension<CameraTransformRotation>(&header->extension.camera_rotation);
 }
 
 size_t Packet::headers_size() const {

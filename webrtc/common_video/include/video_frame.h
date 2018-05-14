@@ -64,6 +64,9 @@ class EncodedImage {
   // until the application indicates a change again.
   PlayoutDelay playout_delay_ = {-1, -1};
 
+  CameraPosition camera_position_;
+  CameraRotation camera_rotation_;
+
   // Timing information should be updatable on const instances.
   mutable struct Timing {
     uint8_t flags = TimingFrameFlags::kInvalid;

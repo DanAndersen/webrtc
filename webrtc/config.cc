@@ -84,6 +84,16 @@ const char RtpExtension::kVideoTimingUri[] =
     "http://www.webrtc.org/experiments/rtp-hdrext/video-timing";
 const int RtpExtension::kVideoTimingDefaultId = 8;
 
+// This extension allows sending camera transform synchronized with video frame.
+const char RtpExtension::kCameraTransformPositionUri[] =
+ "https://github.com/phongcao/webrtc-metadata-example/camera-transform-position";
+const int RtpExtension::kCameraTransformPositionDefaultId = 9;
+
+// This extension allows sending camera transform synchronized with video frame.
+const char RtpExtension::kCameraTransformRotationUri[] =
+ "https://github.com/phongcao/webrtc-metadata-example/camera-transform-rotation";
+const int RtpExtension::kCameraTransformRotationDefaultId = 10;
+
 const char RtpExtension::kEncryptHeaderExtensionsUri[] =
     "urn:ietf:params:rtp-hdrext:encrypt";
 
@@ -102,7 +112,9 @@ bool RtpExtension::IsSupportedForVideo(const std::string& uri) {
          uri == webrtc::RtpExtension::kTransportSequenceNumberUri ||
          uri == webrtc::RtpExtension::kPlayoutDelayUri ||
          uri == webrtc::RtpExtension::kVideoContentTypeUri ||
-         uri == webrtc::RtpExtension::kVideoTimingUri;
+         uri == webrtc::RtpExtension::kVideoTimingUri ||
+         uri == webrtc::RtpExtension::kCameraTransformPositionUri ||
+         uri == webrtc::RtpExtension::kCameraTransformRotationUri;
 }
 
 bool RtpExtension::IsEncryptionSupported(const std::string& uri) {

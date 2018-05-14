@@ -556,6 +556,8 @@ void RtpVideoStreamReceiver::NotifyReceiverOfFecPacket(
     rtp_header.type.Video.video_timing = header.extension.video_timing;
   }
   rtp_header.type.Video.playout_delay = header.extension.playout_delay;
+  rtp_header.type.Video.camera_position = header.extension.camera_position;
+  rtp_header.type.Video.camera_rotation = header.extension.camera_rotation;
 
   OnReceivedPayloadData(nullptr, 0, &rtp_header);
 }

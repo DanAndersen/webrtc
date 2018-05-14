@@ -740,6 +740,21 @@ struct PlayoutDelay {
   int max_ms;
 };
 
+// Camera's position.
+struct CameraPosition {
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+};
+
+// Camera's rotation.
+struct CameraRotation {
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+  uint32_t w;
+};
+
 // Class to represent the value of RTP header extensions that are
 // variable-length strings (e.g., RtpStreamId and RtpMid).
 // Unlike std::string, it can be copied with memcpy and cleared with memset.
@@ -830,6 +845,9 @@ struct RTPHeaderExtension {
   // For identifying the media section used to interpret this RTP packet. See
   // https://tools.ietf.org/html/draft-ietf-mmusic-sdp-bundle-negotiation-38
   Mid mid;
+
+  CameraPosition camera_position = { 0 };
+  CameraRotation camera_rotation = { 0 };
 };
 
 struct RTPHeader {

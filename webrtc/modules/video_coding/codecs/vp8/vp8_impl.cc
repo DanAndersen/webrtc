@@ -930,6 +930,16 @@ int VP8EncoderImpl::GetEncodedPartitions(
                                         : VideoContentType::UNSPECIFIED;
     encoded_images_[encoder_idx].timing_.flags = TimingFrameFlags::kInvalid;
 
+    float pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, rot_w;
+    input_image.get_camera_transform(&pos_x, &pos_y, &pos_z, &rot_x, &rot_y, &rot_z, &rot_w);
+    encoded_images_[encoder_idx].camera_position_.x = *((uint32_t*)&pos_x);
+    encoded_images_[encoder_idx].camera_position_.y = *((uint32_t*)&pos_y);
+    encoded_images_[encoder_idx].camera_position_.z = *((uint32_t*)&pos_z);
+    encoded_images_[encoder_idx].camera_rotation_.x = *((uint32_t*)&rot_x);
+    encoded_images_[encoder_idx].camera_rotation_.y = *((uint32_t*)&rot_y);
+    encoded_images_[encoder_idx].camera_rotation_.z = *((uint32_t*)&rot_z);
+    encoded_images_[encoder_idx].camera_rotation_.w = *((uint32_t*)&rot_w);
+
     int qp = -1;
     vpx_codec_control(&encoders_[encoder_idx], VP8E_GET_LAST_QUANTIZER_64, &qp);
     temporal_layers_[stream_idx]->FrameEncoded(
@@ -1174,7 +1184,7 @@ int VP8DecoderImpl::Decode(const EncodedImage& input_image,
   vpx_codec_err_t vpx_ret =
       vpx_codec_control(decoder_, VPXD_GET_LAST_QUANTIZER, &qp);
   RTC_DCHECK_EQ(vpx_ret, VPX_CODEC_OK);
-  ret = ReturnFrame(img, input_image._timeStamp, input_image.ntp_time_ms_, qp);
+  ret = ReturnFrame(img, input_image._timeStamp, input_image.ntp_time_ms_, input_image.camera_position_, input_image.camera_rotation_, qp);
   if (ret != 0) {
     // Reset to avoid requesting key frames too often.
     if (ret < 0 && propagation_cnt_ > 0)
@@ -1193,6 +1203,8 @@ int VP8DecoderImpl::Decode(const EncodedImage& input_image,
 int VP8DecoderImpl::ReturnFrame(const vpx_image_t* img,
                                 uint32_t timestamp,
                                 int64_t ntp_time_ms,
+                                const CameraPosition& camera_position,
+                                const CameraRotation& camera_rotation,
                                 int qp) {
   if (img == NULL) {
     // Decoder OK and NULL image => No show frame
@@ -1227,6 +1239,14 @@ int VP8DecoderImpl::ReturnFrame(const vpx_image_t* img,
 
   VideoFrame decoded_image(buffer, timestamp, 0, kVideoRotation_0);
   decoded_image.set_ntp_time_ms(ntp_time_ms);
+  decoded_image.set_camera_transform(
+   *((float*)&camera_position.x),
+   *((float*)&camera_position.y),
+   *((float*)&camera_position.z),
+   *((float*)&camera_rotation.x),
+   *((float*)&camera_rotation.y),
+   *((float*)&camera_rotation.z),
+   *((float*)&camera_rotation.w));
   decode_complete_callback_->Decoded(decoded_image, rtc::Optional<int32_t>(),
                                      rtc::Optional<uint8_t>(qp));
 

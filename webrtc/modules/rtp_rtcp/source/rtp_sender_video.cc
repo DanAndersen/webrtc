@@ -336,6 +336,12 @@ bool RTPSenderVideo::SendVideo(RtpVideoCodecTypes video_type,
         last_packet->SetExtension<VideoTimingExtension>(
             video_header->video_timing);
       }
+
+      // Set camera transform position.
+      last_packet->SetExtension<CameraTransformPosition>(video_header->camera_position);
+
+      // Set camera transform rotation.
+      last_packet->SetExtension<CameraTransformRotation>(video_header->camera_rotation);
     }
 
     // FEC settings.

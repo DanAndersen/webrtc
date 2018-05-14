@@ -73,6 +73,8 @@ public:
     virtual int32_t IncomingFrame(uint8_t* videoFrame,
                                   size_t videoFrameLength,
                                   const VideoCaptureCapability& frameInfo,
+                                  float pos_x, float pos_y, float pos_z,
+                                  float rot_x, float rot_y, float rot_z, float rot_w,
                                   int64_t captureTime = 0) = 0;
 protected:
     ~VideoCaptureExternal() {}

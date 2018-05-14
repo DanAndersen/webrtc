@@ -120,6 +120,16 @@ struct RtpExtension {
   static const char kPlayoutDelayUri[];
   static const int kPlayoutDelayDefaultId;
 
+  // Header extension for camera transform position, see url for details:
+  // https://github.com/phongcao/webrtc-metadata-example/camera-transform-position
+  static const char kCameraTransformPositionUri[];
+  static const int kCameraTransformPositionDefaultId;
+
+  // Header extension for camera transform rotation, see url for details:
+  // https://github.com/phongcao/webrtc-metadata-example/camera-transform-rotation
+  static const char kCameraTransformRotationUri[];
+  static const int kCameraTransformRotationDefaultId;
+
   // Encryption of Header Extensions, see RFC 6904 for details:
   // https://tools.ietf.org/html/rfc6904
   static const char kEncryptHeaderExtensionsUri[];

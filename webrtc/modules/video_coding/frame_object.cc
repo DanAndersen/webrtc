@@ -49,6 +49,8 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
   _payloadType = first_packet->payloadType;
   _timeStamp = first_packet->timestamp;
   ntp_time_ms_ = first_packet->ntp_time_ms_;
+  camera_position_ = first_packet->video_header.camera_position;
+  camera_rotation_ = first_packet->video_header.camera_rotation;
 
   // Setting frame's playout delays to the same values
   // as of the first packet's.
@@ -113,6 +115,10 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
   // (HEVC)).
   rotation_ = last_packet->video_header.rotation;
   _rotation_set = true;
+
+  camera_position_ = last_packet->video_header.camera_position;
+  camera_rotation_ = last_packet->video_header.camera_rotation;
+
   content_type_ = last_packet->video_header.content_type;
   if (last_packet->video_header.video_timing.flags !=
       TimingFrameFlags::kInvalid) {

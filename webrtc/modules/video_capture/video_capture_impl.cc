@@ -124,6 +124,8 @@ int32_t VideoCaptureImpl::IncomingFrame(
     uint8_t* videoFrame,
     size_t videoFrameLength,
     const VideoCaptureCapability& frameInfo,
+    float pos_x, float pos_y, float pos_z,
+    float rot_x, float rot_y, float rot_z, float rot_w,
     int64_t captureTime/*=0*/)
 {
     rtc::CritScope cs(&_apiCs);
@@ -178,6 +180,7 @@ int32_t VideoCaptureImpl::IncomingFrame(
     VideoFrame captureFrame(buffer, 0, rtc::TimeMillis(),
                             !apply_rotation ? _rotateFrame : kVideoRotation_0);
     captureFrame.set_ntp_time_ms(captureTime);
+    captureFrame.set_camera_transform(pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, rot_w);
 
     DeliverCapturedFrame(captureFrame);
 

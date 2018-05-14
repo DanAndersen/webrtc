@@ -361,6 +361,12 @@ RtpCapabilities WebRtcVideoEngine::GetCapabilities() const {
   capabilities.header_extensions.push_back(
         webrtc::RtpExtension(webrtc::RtpExtension::kVideoTimingUri,
                              webrtc::RtpExtension::kVideoTimingDefaultId));
+  capabilities.header_extensions.push_back(
+        webrtc::RtpExtension(webrtc::RtpExtension::kCameraTransformPositionUri,
+                             webrtc::RtpExtension::kCameraTransformPositionDefaultId));
+  capabilities.header_extensions.push_back(
+        webrtc::RtpExtension(webrtc::RtpExtension::kCameraTransformRotationUri,
+                             webrtc::RtpExtension::kCameraTransformRotationDefaultId));
   return capabilities;
 }
 

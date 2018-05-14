@@ -21,9 +21,12 @@ namespace webrtc {
 	{
 		private:
 			static Windows::UI::Core::CoreDispatcher^ windowDispatcher;
+			static Windows::Perception::Spatial::ISpatialCoordinateSystem^ spatialCoordinateSystem;
 		public:
 			static void SetCoreDispatcher(Windows::UI::Core::CoreDispatcher^ inWindowDispatcher);
+			static void SetSpatialCoordinateSystem(Windows::Perception::Spatial::ISpatialCoordinateSystem^ inSpatialCoordinateSystem);
 			static Windows::UI::Core::CoreDispatcher^ GetCoreDispatcher();
+			static Windows::Perception::Spatial::ISpatialCoordinateSystem^ GetSpatialCoordinateSystem();
 
 	};  // VideoCommonWinUWP
 }  // namespace webrtc

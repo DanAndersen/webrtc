@@ -369,6 +369,68 @@ bool BaseRtpStringExtension::Write(uint8_t* data, const std::string& str) {
   return true;
 }
 
+// Coordination of camera transform position in RTP streams.
+//
+constexpr RTPExtensionType CameraTransformPosition::kId;
+constexpr uint8_t CameraTransformPosition::kValueSizeBytes;
+constexpr const char CameraTransformPosition::kUri[];
+
+bool CameraTransformPosition::Parse(rtc::ArrayView<const uint8_t> data, CameraPosition* camera_position) {
+  int size = sizeof(uint32_t);
+  int offset = 0;
+  const uint8_t* pData = data.data();
+  (*camera_position).x = ByteReader<uint32_t>::ReadBigEndian(pData + offset);
+  offset += size;
+  (*camera_position).y = ByteReader<uint32_t>::ReadBigEndian(pData + offset);
+  offset += size;
+  (*camera_position).z = ByteReader<uint32_t>::ReadBigEndian(pData + offset);
+  return true;
+}
+
+bool CameraTransformPosition::Write(uint8_t* data, const CameraPosition& camera_position) {
+  int size = sizeof(uint32_t);
+  int offset = 0;
+  ByteWriter<uint32_t>::WriteBigEndian(data + offset, camera_position.x);
+  offset += size;
+  ByteWriter<uint32_t>::WriteBigEndian(data + offset, camera_position.y);
+  offset += size;
+  ByteWriter<uint32_t>::WriteBigEndian(data + offset, camera_position.z);
+  return true;
+}
+
+// Coordination of camera transform rotation in RTP streams.
+//
+constexpr RTPExtensionType CameraTransformRotation::kId;
+constexpr uint8_t CameraTransformRotation::kValueSizeBytes;
+constexpr const char CameraTransformRotation::kUri[];
+
+bool CameraTransformRotation::Parse(rtc::ArrayView<const uint8_t> data, CameraRotation* camera_rotation) {
+  int size = sizeof(uint32_t);
+  int offset = 0;
+  const uint8_t* pData = data.data();
+  (*camera_rotation).x = ByteReader<uint32_t>::ReadBigEndian(pData + offset);
+  offset += size;
+  (*camera_rotation).y = ByteReader<uint32_t>::ReadBigEndian(pData + offset);
+  offset += size;
+  (*camera_rotation).z = ByteReader<uint32_t>::ReadBigEndian(pData + offset);
+  offset += size;
+  (*camera_rotation).w = ByteReader<uint32_t>::ReadBigEndian(pData + offset);
+  return true;
+}
+
+bool CameraTransformRotation::Write(uint8_t* data, const CameraRotation& camera_rotation) {
+  int size = sizeof(uint32_t);
+  int offset = 0;
+  ByteWriter<uint32_t>::WriteBigEndian(data + offset, camera_rotation.x);
+  offset += size;
+  ByteWriter<uint32_t>::WriteBigEndian(data + offset, camera_rotation.y);
+  offset += size;
+  ByteWriter<uint32_t>::WriteBigEndian(data + offset, camera_rotation.z);
+  offset += size;
+  ByteWriter<uint32_t>::WriteBigEndian(data + offset, camera_rotation.w);
+  return true;
+}
+
 // Constant declarations for string RTP header extension types.
 
 constexpr RTPExtensionType RtpStreamId::kId;

@@ -482,6 +482,38 @@ void RtpHeaderParser::ParseOneByteExtensionHeader(
           header->extension.mid.Set(rtc::MakeArrayView(ptr, len + 1));
           break;
         }
+        case kRtpExtensionCameraTransformPosition: {
+          if (len != 11) {
+            LOG(LS_WARNING) << "Incorrect camera transform position len: " << len;
+            return;
+          }
+
+          int size = sizeof(uint32_t);
+          int offset = 0;
+          header->extension.camera_position.x = ByteReader<uint32_t>::ReadBigEndian(ptr + offset);
+          offset += size;
+          header->extension.camera_position.y = ByteReader<uint32_t>::ReadBigEndian(ptr + offset);
+          offset += size;
+          header->extension.camera_position.z = ByteReader<uint32_t>::ReadBigEndian(ptr + offset);
+          break;
+        }
+        case kRtpExtensionCameraTransformRotation: {
+          if (len != 15) {
+            LOG(LS_WARNING) << "Incorrect camera transform rotation len: " << len;
+            return;
+          }
+
+          int size = sizeof(uint32_t);
+          int offset = 0;
+          header->extension.camera_rotation.x = ByteReader<uint32_t>::ReadBigEndian(ptr + offset);
+          offset += size;
+          header->extension.camera_rotation.y = ByteReader<uint32_t>::ReadBigEndian(ptr + offset);
+          offset += size;
+          header->extension.camera_rotation.z = ByteReader<uint32_t>::ReadBigEndian(ptr + offset);
+          offset += size;
+          header->extension.camera_rotation.w = ByteReader<uint32_t>::ReadBigEndian(ptr + offset);
+          break;
+        }
         case kRtpExtensionNone:
         case kRtpExtensionNumberOfExtensions: {
           RTC_NOTREACHED() << "Invalid extension type: " << type;

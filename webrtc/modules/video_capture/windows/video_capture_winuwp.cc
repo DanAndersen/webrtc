@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <Mferror.h>
+#include <DirectXMath.h>
 
 #include "webrtc/rtc_base/logging.h"
 #include "webrtc/system_wrappers/include/event_wrapper.h"
@@ -24,6 +25,12 @@
 #include "webrtc/rtc_base/Win32.h"
 #include "libyuv/planar_functions.h"
 #include "webrtc/common_video/video_common_winuwp.h"
+
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+EXTERN_GUID(MFSampleExtension_Spatial_CameraCoordinateSystem, 0x9d13c82f, 0x2199, 0x4e67, 0x91, 0xcd, 0xd1, 0xa4, 0x18, 0x1f, 0x25, 0x34);
+EXTERN_GUID(MFSampleExtension_Spatial_CameraViewTransform, 0x4e251fa4, 0x830f, 0x4770, 0x85, 0x9a, 0x4b, 0x8d, 0x99, 0xaa, 0x80, 0x9b);
+EXTERN_GUID(MFSampleExtension_Spatial_CameraProjectionTransform, 0x47f9fcb5, 0x2a02, 0x4f26, 0xa4, 0x77, 0x79, 0x2f, 0xdf, 0x95, 0x88, 0x6a);
+#endif
 
 using Microsoft::WRL::ComPtr;
 using Windows::Devices::Enumeration::DeviceClass;
@@ -486,7 +493,109 @@ void CaptureDevice::OnCaptureFailed(
 
 void CaptureDevice::OnMediaSample(Object^ sender, MediaSampleEventArgs^ args) {
   if (capture_device_listener_) {
+    DirectX::XMFLOAT4 scaleF4(0, 0, 0, 0);
+    DirectX::XMFLOAT4 rotF4(0, 0, 0, 0);
+    DirectX::XMFLOAT4 transF4(0, 0, 0, 0);
     Microsoft::WRL::ComPtr<IMFSample> spMediaSample = args->GetMediaSample();
+
+    using ISpatialCoordinateSystem = ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem;
+    ISpatialCoordinateSystem* currentCoordinateSystem = reinterpret_cast<ISpatialCoordinateSystem*>(
+      VideoCommonWinUWP::GetSpatialCoordinateSystem());
+
+    if (currentCoordinateSystem != nullptr)
+    {
+      using float4x4 = ABI::Windows::Foundation::Numerics::Matrix4x4;
+      ComPtr<IUnknown> spUnknown;
+      ComPtr<ISpatialCoordinateSystem> spSpatialCoordinateSystem;
+      ComPtr<ABI::Windows::Foundation::IReference<float4x4>> spTransformRef;
+      float4x4 worldToCamera;
+      float4x4 viewCameraTransform;
+      UINT32 cbBlobSize = 0;
+      HRESULT hr = spMediaSample->GetUnknown(
+        MFSampleExtension_Spatial_CameraCoordinateSystem,
+        IID_PPV_ARGS(&spUnknown));
+    
+      if (SUCCEEDED(hr))
+      {
+        hr = spUnknown.As(&spSpatialCoordinateSystem);
+        if (SUCCEEDED(hr))
+        {
+          //float4x4 cameraProjectionTransform;
+          //hr = spMediaSample->GetBlob(MFSampleExtension_Spatial_CameraProjectionTransform,
+          //  (UINT8*)&cameraProjectionTransform,
+          //  sizeof(cameraProjectionTransform), &cbBlobSize);
+
+          hr = spMediaSample->GetBlob(MFSampleExtension_Spatial_CameraViewTransform,
+                      (UINT8*)(&viewCameraTransform),
+                      sizeof(viewCameraTransform),
+                      &cbBlobSize);
+
+          if (SUCCEEDED(hr) && cbBlobSize == sizeof(float4x4))
+          {
+            hr = spSpatialCoordinateSystem->TryGetTransformTo(
+                currentCoordinateSystem,
+                &spTransformRef);
+
+            if (SUCCEEDED(hr) && spTransformRef)
+            {
+              hr = spTransformRef->get_Value(&worldToCamera);
+              if (SUCCEEDED(hr))
+              {
+                DirectX::XMFLOAT4X4 viewCameraTransformMatrix;
+                viewCameraTransformMatrix._11 = viewCameraTransform.M11;
+                viewCameraTransformMatrix._12 = viewCameraTransform.M12;
+                viewCameraTransformMatrix._13 = viewCameraTransform.M13;
+                viewCameraTransformMatrix._14 = viewCameraTransform.M14;
+                viewCameraTransformMatrix._21 = viewCameraTransform.M21;
+                viewCameraTransformMatrix._22 = viewCameraTransform.M22;
+                viewCameraTransformMatrix._23 = viewCameraTransform.M23;
+                viewCameraTransformMatrix._24 = viewCameraTransform.M24;
+                viewCameraTransformMatrix._31 = viewCameraTransform.M31;
+                viewCameraTransformMatrix._32 = viewCameraTransform.M32;
+                viewCameraTransformMatrix._33 = viewCameraTransform.M33;
+                viewCameraTransformMatrix._34 = viewCameraTransform.M34;
+                viewCameraTransformMatrix._41 = viewCameraTransform.M41;
+                viewCameraTransformMatrix._42 = viewCameraTransform.M42;
+                viewCameraTransformMatrix._43 = viewCameraTransform.M43;
+                viewCameraTransformMatrix._44 = viewCameraTransform.M44;
+                DirectX::XMMATRIX invertViewCameraTransformMatrix = DirectX::XMMatrixInverse(
+                  nullptr,
+                  DirectX::XMLoadFloat4x4(&viewCameraTransformMatrix));
+
+                DirectX::XMFLOAT4X4 worldToCameraMatrix;
+                worldToCameraMatrix._11 = worldToCamera.M11;
+                worldToCameraMatrix._12 = worldToCamera.M12;
+                worldToCameraMatrix._13 = worldToCamera.M13;
+                worldToCameraMatrix._14 = worldToCamera.M14;
+                worldToCameraMatrix._21 = worldToCamera.M21;
+                worldToCameraMatrix._22 = worldToCamera.M22;
+                worldToCameraMatrix._23 = worldToCamera.M23;
+                worldToCameraMatrix._24 = worldToCamera.M24;
+                worldToCameraMatrix._31 = worldToCamera.M31;
+                worldToCameraMatrix._32 = worldToCamera.M32;
+                worldToCameraMatrix._33 = worldToCamera.M33;
+                worldToCameraMatrix._34 = worldToCamera.M34;
+                worldToCameraMatrix._41 = worldToCamera.M41;
+                worldToCameraMatrix._42 = worldToCamera.M42;
+                worldToCameraMatrix._43 = worldToCamera.M43;
+                worldToCameraMatrix._44 = worldToCamera.M44;
+
+                DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixMultiply(
+                  invertViewCameraTransformMatrix,
+                  DirectX::XMLoadFloat4x4(&worldToCameraMatrix));
+                
+                DirectX::XMVECTOR scale, rot, trans;
+                DirectX::XMMatrixDecompose(&scale, &rot, &trans, viewMatrix);
+                DirectX::XMStoreFloat4(&scaleF4, scale);
+                DirectX::XMStoreFloat4(&rotF4, rot);
+                DirectX::XMStoreFloat4(&transF4, trans);
+              }
+            }
+          }
+        }
+      }
+    }
+
     ComPtr<IMFMediaBuffer> spMediaBuffer;
     HRESULT hr = spMediaSample->GetBufferByIndex(0, &spMediaBuffer);
     LONGLONG hnsSampleTime = 0;
@@ -517,7 +626,9 @@ void CaptureDevice::OnMediaSample(Object^ sender, MediaSampleEventArgs^ args) {
 
       capture_device_listener_->OnIncomingFrame(video_frame,
                                                 video_frame_length,
-                                                frame_info_);
+                                                frame_info_,
+                                                transF4.x, transF4.y, transF4.z,
+                                                rotF4.x, rotF4.y, rotF4.z, rotF4.w);
 
       hr = spMediaBuffer->Unlock();
     }
@@ -690,7 +801,8 @@ void BlackFramesGenerator::StartCapture(
       this->capture_device_listener_->OnIncomingFrame(
         black_frame->data(),
         black_frame_size,
-        this->frame_info_);
+        this->frame_info_,
+                0, 0, 0, 0, 0, 0, 0);
     }
   });
   auto timespan = Windows::Foundation::TimeSpan();
@@ -1034,11 +1146,14 @@ void VideoCaptureWinUWP::OnDisplayOrientationChanged(
 void VideoCaptureWinUWP::OnIncomingFrame(
   uint8_t* video_frame,
   size_t video_frame_length,
-  const VideoCaptureCapability& frame_info) {
+  const VideoCaptureCapability& frame_info,
+  float pos_x, float pos_y, float pos_z,
+  float rot_x, float rot_y, float rot_z, float rot_w) {
   if (device_->CaptureStarted()) {
     last_frame_info_ = frame_info;
   }
-  IncomingFrame(video_frame, video_frame_length, frame_info);
+  IncomingFrame(video_frame, video_frame_length, frame_info, 
+    pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, rot_w);
 }
 
 void VideoCaptureWinUWP::OnCaptureDeviceFailed(HRESULT code,

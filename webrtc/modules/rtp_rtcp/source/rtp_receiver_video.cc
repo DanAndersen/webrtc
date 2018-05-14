@@ -112,6 +112,14 @@ int32_t RTPReceiverVideo::ParseRtpPacket(WebRtcRTPHeader* rtp_header,
   rtp_header->type.Video.playout_delay =
       rtp_header->header.extension.playout_delay;
 
+  // Retrieve the camera transform position information.
+  rtp_header->type.Video.camera_position =
+   rtp_header->header.extension.camera_position;
+
+  // Retrieve the camera transform rotation information.
+  rtp_header->type.Video.camera_rotation =
+   rtp_header->header.extension.camera_rotation;
+
   return data_callback_->OnReceivedPayloadData(parsed_payload.payload,
                                                parsed_payload.payload_length,
                                                rtp_header) == 0

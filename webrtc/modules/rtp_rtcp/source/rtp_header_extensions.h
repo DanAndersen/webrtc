@@ -182,5 +182,27 @@ class RtpMid : public BaseRtpStringExtension {
   static constexpr const char kUri[] = "urn:ietf:params:rtp-hdrext:sdes:mid";
 };
 
+class CameraTransformPosition {
+ public:
+  static constexpr RTPExtensionType kId = kRtpExtensionCameraTransformPosition;
+  static constexpr uint8_t kValueSizeBytes = sizeof(CameraPosition);
+  static constexpr const char kUri[] = "https://github.com/phongcao/webrtc-metadata-example/camera-transform-position";
+
+  static bool Parse(rtc::ArrayView<const uint8_t> data, CameraPosition* camera_position);
+  static bool Write(uint8_t* data, const CameraPosition& camera_position);
+  static size_t ValueSize(const CameraPosition& value) { return kValueSizeBytes; }
+};
+
+class CameraTransformRotation {
+public:
+ static constexpr RTPExtensionType kId = kRtpExtensionCameraTransformRotation;
+ static constexpr uint8_t kValueSizeBytes = sizeof(CameraRotation);
+ static constexpr const char kUri[] = "https://github.com/phongcao/webrtc-metadata-example/camera-transform-rotation";
+
+ static bool Parse(rtc::ArrayView<const uint8_t> data, CameraRotation* camera_rotation);
+ static bool Write(uint8_t* data, const CameraRotation& camera_rotation);
+ static size_t ValueSize(const CameraRotation& value) { return kValueSizeBytes; }
+};
+
 }  // namespace webrtc
 #endif  // WEBRTC_MODULES_RTP_RTCP_SOURCE_RTP_HEADER_EXTENSIONS_H_
