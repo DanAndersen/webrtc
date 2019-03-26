@@ -199,7 +199,8 @@ ref class CaptureDevice sealed {
   void Cleanup();
 
   void StartCapture(MediaEncodingProfile^ media_encoding_profile,
-                    IVideoEncodingProperties^ video_encoding_properties);
+                    IVideoEncodingProperties^ video_encoding_properties,
+	                bool mrc_enabled);
 
   void StopCapture();
 
@@ -344,7 +345,8 @@ void CaptureDevice::CleanupMixedRealityCapture() {
 
 void CaptureDevice::StartCapture(
   MediaEncodingProfile^ media_encoding_profile,
-  IVideoEncodingProperties^ video_encoding_properties) {
+  IVideoEncodingProperties^ video_encoding_properties,
+  bool mrc_enabled) {
   if (capture_started_) {
     throw ref new Platform::Exception(
       __HRESULT_FROM_WIN32(ERROR_INVALID_STATE));
@@ -418,10 +420,10 @@ void CaptureDevice::StartCapture(
   auto initOp = media_sink_->InitializeAsync(media_encoding_profile->Video);
   auto initTask = Concurrency::create_task(initOp)
     .then([this, media_encoding_profile,
-      video_encoding_properties](IMediaExtension^ media_extension) {
+      video_encoding_properties, mrc_enabled](IMediaExtension^ media_extension) {
 
 	  Platform::String^ deviceFamily = Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily;
-	  if (deviceFamily->Equals(L"Windows.Holographic")) {
+	  if (deviceFamily->Equals(L"Windows.Holographic") && mrc_enabled) {
 		  auto mrcVideoEffectDefinition = ref new MrcVideoEffectDefinition;
 		  mrcVideoEffectDefinition->StreamType = MediaStreamType::VideoRecord;
 		  auto addEffectTask = Concurrency::create_task(media_capture_->AddVideoEffectAsync(mrcVideoEffectDefinition, MediaStreamType::VideoRecord)).then([this](IMediaExtension ^videoExtension)
@@ -1025,7 +1027,8 @@ int32_t VideoCaptureWinUWP::StartCapture(
       ApplyDisplayOrientation(AppStateDispatcher::Instance()->GetOrientation());
     }
     device_->StartCapture(media_encoding_profile_,
-                          video_encoding_properties_);
+                          video_encoding_properties_,
+                          capability.mrcEnabled);
     last_frame_info_ = capability;
   } catch (Platform::Exception^ e) {
     LOG(LS_ERROR) << "Failed to start capture. "
@@ -1111,7 +1114,7 @@ bool VideoCaptureWinUWP::ResumeCapture() {
     LOG(LS_INFO) << "ResumeCapture";
     fake_device_->StopCapture();
     device_->StartCapture(media_encoding_profile_,
-      video_encoding_properties_);
+      video_encoding_properties_, _requestedCapability.mrcEnabled);
     return true;
   }
   LOG(LS_INFO) << "ResumeCapture, capture is not started";
